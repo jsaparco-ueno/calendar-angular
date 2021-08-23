@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../calendar.csproj" />
+    <ProjectReference Include="../calendar/calendar.csproj" />
   </ItemGroup>
 
 </Project>
