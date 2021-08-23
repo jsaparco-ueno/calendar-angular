@@ -31,11 +31,24 @@ namespace calendar.Controllers
             var result = new List<CalendarEvent>();
             await using (var db = new SqlConnection(connectionString))
             {
-                result = (await db.QueryAsync<CalendarEvent>(@"select * from CalendarEvent")).ToList();
+                result = (await db.QueryAsync<CalendarEvent>(@"SELECT * FROM CalendarEvent")).ToList();
             }
 
             return result;
         }
+        [HttpGet]
+        [Route("{id:Guid}")]
+        public async Task<CalendarEvent> GetOne(Guid id)
+        {
+            var result = new CalendarEvent();
+            await using (var db = new SqlConnection(connectionString))
+            {
+                result = (await db.QueryFirstAsync<CalendarEvent>(@"SELECT TOP 1 * FROM CalendarEvent WHERE id = @id", new {id}));
+            }
+
+            return result;
+        }
+
 
         [HttpDelete]
         [Route("delete/{id:Guid}")]
@@ -53,11 +66,24 @@ namespace calendar.Controllers
         {
             await using(var db = new SqlConnection(connectionString))
             {
-                await db.QueryAsync(@"INSERT INTO[dbo].[CalendarEvent]
+                await db.QueryAsync(@"INSERT INTO [dbo].[CalendarEvent]
                     ([Id],[Title],[Notes],[StartTime],[EndTime],[IsDeleted])
                     VALUES
                     (NEWID(),@title,@notes,@startTime,@endTime,0)",
                     new {calendarEvent.Title, calendarEvent.Notes, calendarEvent.StartTime, calendarEvent.EndTime});
+            }
+        }
+
+        [HttpPut]
+        [Route("update")]
+        public async Task Update(CalendarEvent calendarEvent)
+        {
+            await using(var db =new SqlConnection(connectionString))
+            {
+                await db.QueryAsync(@"UPDATE [dbo].[CalendarEvent] SET
+                    Title = @title, Notes = @notes, StartTime = @startTime, EndTime = @endTime
+                    WHERE Id = @id",
+                    new {calendarEvent.Title, calendarEvent.Notes, calendarEvent.StartTime, calendarEvent.EndTime, calendarEvent.Id});
             }
         }
     }

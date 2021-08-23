@@ -13,6 +13,7 @@ import { CounterComponent } from './counter/counter.component';
 import { FetchDataComponent } from './fetch-data/fetch-data.component';
 import { DayViewComponent } from './day-view/day-view.component';
 import { CreateComponent } from './create/create.component';
+import { UpdateComponent } from './update/update.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { CreateComponent } from './create/create.component';
     CounterComponent,
     FetchDataComponent,
     DayViewComponent,
-    CreateComponent
+    CreateComponent,
+    UpdateComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -33,7 +35,8 @@ import { CreateComponent } from './create/create.component';
       { path: 'counter', component: CounterComponent },
       { path: 'fetch-data', component: FetchDataComponent },
       { path: 'day-view', component: DayViewComponent },
-      { path: 'create', component: CreateComponent }
+      { path: 'create', component: CreateComponent },
+      { path: 'update/:id', component: UpdateComponent, pathMatch: 'full' }
     ]),
     BrowserAnimationsModule,
     MatCardModule, MatSidenavModule, MatFormFieldModule

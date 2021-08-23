@@ -1,0 +1,15 @@
+<div>
+  <h1>Edit an Event</h1>
+    <form>
+      <div class="form-group">
+        <input [(ngModel)]="title" name="title" class="form-control" placeholder="Enter a title">
+        <input [(ngModel)]="notes" name="notes" class="form-control" placeholder="Add description">
+        <input [(ngModel)]="startTime" name="startTime" class="form-control" placeholder="Enter start date and time">
+        <input [(ngModel)]="endTime" name="endTime" class="form-control" placeholder="Enter end date and time">
+      </div>
+      <div class="form-group mt-4">
+        <button class="btn btn-primary" (click)="saveEvent()">Add</button>&nbsp;
+        <button class="btn btn-outline-primary">Cancel</button>
+      </div>
+    </form>
+</div>
