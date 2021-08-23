@@ -28,14 +28,9 @@ namespace calendar.Controllers
         [HttpGet]
         public async Task<IEnumerable<CalendarEvent>> Get()
         {
-            var result = new List<CalendarEvent>();
-            await using (var db = new SqlConnection(connectionString))
-            {
-                result = (await db.QueryAsync<CalendarEvent>(@"SELECT * FROM CalendarEvent")).ToList();
-            }
-
-            return result;
+            return await CalendarMethods.GetAllEventsAsync(connectionString);
         }
+
         [HttpGet]
         [Route("{id:Guid}")]
         public async Task<CalendarEvent> GetOne(Guid id)
@@ -62,29 +57,56 @@ namespace calendar.Controllers
 
         [HttpPost]
         [Route("create")]
-        public async Task Create(CalendarEvent calendarEvent)
+        public async Task<IActionResult> Create(CalendarEvent calendarEvent)
         {
-            await using(var db = new SqlConnection(connectionString))
+            if (CalendarMethods.CheckForOverlaps(calendarEvent, await CalendarMethods.GetAllEventsAsync(connectionString)) == true)
+            return BadRequest("The event overlaps one or more other events.  Events may not overlap.");
             {
-                await db.QueryAsync(@"INSERT INTO [dbo].[CalendarEvent]
-                    ([Id],[Title],[Notes],[StartTime],[EndTime],[IsDeleted])
-                    VALUES
-                    (NEWID(),@title,@notes,@startTime,@endTime,0)",
-                    new {calendarEvent.Title, calendarEvent.Notes, calendarEvent.StartTime, calendarEvent.EndTime});
+                await using(var db = new SqlConnection(connectionString))
+                {
+                    await db.QueryAsync(@"INSERT INTO [dbo].[CalendarEvent]
+                        ([Id],[Title],[Notes],[StartTime],[EndTime],[IsDeleted])
+                        VALUES
+                        (NEWID(),@title,@notes,@startTime,@endTime,0)",
+                        new {calendarEvent.Title, calendarEvent.Notes, calendarEvent.StartTime, calendarEvent.EndTime});
+                }
             }
+            return Ok();
         }
 
         [HttpPut]
         [Route("update")]
-        public async Task Update(CalendarEvent calendarEvent)
+        public async Task<IActionResult> Update(CalendarEvent calendarEvent)
         {
-            await using(var db =new SqlConnection(connectionString))
+            if (CalendarMethods.CheckForOverlaps(calendarEvent, await CalendarMethods.GetAllEventsAsync(connectionString)) == true)
+            return BadRequest("The event overlaps one or more other events.  Events may not overlap.");
             {
-                await db.QueryAsync(@"UPDATE [dbo].[CalendarEvent] SET
-                    Title = @title, Notes = @notes, StartTime = @startTime, EndTime = @endTime
-                    WHERE Id = @id",
-                    new {calendarEvent.Title, calendarEvent.Notes, calendarEvent.StartTime, calendarEvent.EndTime, calendarEvent.Id});
+                await using(var db =new SqlConnection(connectionString))
+                {
+                    await db.QueryAsync(@"UPDATE [dbo].[CalendarEvent] SET
+                        Title = @title, Notes = @notes, StartTime = @startTime, EndTime = @endTime
+                        WHERE Id = @id",
+                        new {calendarEvent.Title, calendarEvent.Notes, calendarEvent.StartTime, calendarEvent.EndTime, calendarEvent.Id});
+                }
             }
+            return Ok();
+        }
+    }
+
+    public static class CalendarMethods
+    {
+        public static async Task<IEnumerable<CalendarEvent>> GetAllEventsAsync(string connectionString)
+        {
+            var result = new List<CalendarEvent>();
+            await using (var db = new SqlConnection(connectionString))
+            {
+                result = (await db.QueryAsync<CalendarEvent>(@"SELECT * FROM CalendarEvent")).ToList();
+            }
+            return result;
+        }
+        public static bool CheckForOverlaps(CalendarEvent calendarEvent, IEnumerable<CalendarEvent> allEvents)
+        {
+             return allEvents.FirstOrDefault<CalendarEvent>(ce => ce.StartTime <= calendarEvent.EndTime && ce.EndTime >= calendarEvent.StartTime) != null;
         }
     }
 }
