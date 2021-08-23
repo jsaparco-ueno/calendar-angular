@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace calendar5.Controllers
+namespace calendar.Controllers
 {
     [ApiController]
     [Route("[controller]")]

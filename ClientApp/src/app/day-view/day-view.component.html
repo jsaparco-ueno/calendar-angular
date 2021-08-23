@@ -1,11 +1,12 @@
 <div>
   <h1>Day View</h1>
-  <mat-card *ngFor = "let calEvent of foo">
+  <a class="nav-link text-dark" [routerLink]="['/create']">Add New</a>
+  <div *ngFor = "let calEvent of calendarEvents">
     <h2>{{calEvent.title}}</h2> {{calEvent.startTime}} - {{calEvent.endTime}}
     <p>{{calEvent.notes}}</p>
 
     <div class="text-right">
       <a *ngIf="isDisabled !== true" (click)="delete(calEvent)">Delete</a>
     </div>
-  </mat-card>
+  </div>
 </div>

@@ -1,6 +1,6 @@
 using System;
 
-namespace calendar5
+namespace calendar
 {
     public class CalendarEvent
     {

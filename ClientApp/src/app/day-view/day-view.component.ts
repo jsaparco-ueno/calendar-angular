@@ -8,18 +8,37 @@ import { Input } from '@angular/core';
 })
 export class DayViewComponent {
   title = 'Day View - Calendar App by JSU';
-  foo: CalendarEvent[];
+  calendarEvents: CalendarEvent[];
   @Input()
   day: Date;
+  baseUrl: string;
+
   constructor(private httpClient: HttpClient, @Inject('BASE_URL') baseUrl: string) {
-    this.httpClient.get<CalendarEvent[]>(baseUrl + 'calendar')
+    this.baseUrl = baseUrl;
+  }
+
+  ngOnInit() {
+    this.get();
+  }
+
+  get() {
+    this.httpClient.get<CalendarEvent[]>(this.baseUrl + 'calendar')
     .subscribe(response => {
-      this.foo = response;
+      this.calendarEvents = response;
     });
   }
 
   delete(calEvent: CalendarEvent) {
-    console.log("delete clicked");
+    console.log('delete clicked');
+    this.httpClient.delete(this.baseUrl + 'calendar/delete/' + calEvent.id)
+    .subscribe({
+      next: response => {
+        console.log('Event deleted.');
+      },
+      error: error => {
+        console.error('Errors occurred when deleting event.');
+      }
+    });
   }
 }
 
