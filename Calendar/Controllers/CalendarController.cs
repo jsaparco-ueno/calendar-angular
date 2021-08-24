@@ -59,18 +59,24 @@ namespace calendar.Controllers
         [Route("create")]
         public async Task<IActionResult> Create(CalendarEvent calendarEvent)
         {
+            if (calendarEvent.Title == string.Empty)
+                return BadRequest("The event title cannot be empty.");
+
             if (CalendarMethods.CheckForOverlaps(calendarEvent, await CalendarMethods.GetAllEventsAsync(connectionString)) == true)
-            return BadRequest("The event overlaps one or more other events.  Events may not overlap.");
+                return BadRequest("The event overlaps one or more other events.  Events may not overlap.");
+
+            if (calendarEvent.EndTime < calendarEvent.StartTime)
+                return BadRequest("The event's end date is before its start date.  Events cannot end before they begin.");
+
+            await using(var db = new SqlConnection(connectionString))
             {
-                await using(var db = new SqlConnection(connectionString))
-                {
-                    await db.QueryAsync(@"INSERT INTO [dbo].[CalendarEvent]
-                        ([Id],[Title],[Notes],[StartTime],[EndTime],[IsDeleted])
-                        VALUES
-                        (NEWID(),@title,@notes,@startTime,@endTime,0)",
-                        new {calendarEvent.Title, calendarEvent.Notes, calendarEvent.StartTime, calendarEvent.EndTime});
-                }
+                await db.QueryAsync(@"INSERT INTO [dbo].[CalendarEvent]
+                    ([Id],[Title],[Notes],[StartTime],[EndTime],[IsDeleted])
+                    VALUES
+                    (NEWID(),@title,@notes,@startTime,@endTime,0)",
+                    new {calendarEvent.Title, calendarEvent.Notes, calendarEvent.StartTime, calendarEvent.EndTime});
             }
+
             return Ok();
         }
 
