@@ -106,13 +106,13 @@ namespace calendar.Controllers
             var result = new List<CalendarEvent>();
             await using (var db = new SqlConnection(connectionString))
             {
-                result = (await db.QueryAsync<CalendarEvent>(@"SELECT * FROM CalendarEvent")).ToList();
+                result = (await db.QueryAsync<CalendarEvent>(@"SELECT * FROM CalendarEvent where IsDeleted = 0")).ToList();
             }
             return result;
         }
         public static bool CheckForOverlaps(CalendarEvent calendarEvent, IEnumerable<CalendarEvent> allEvents)
         {
-             return allEvents.FirstOrDefault<CalendarEvent>(ce => ce.StartTime <= calendarEvent.EndTime && ce.EndTime >= calendarEvent.StartTime) != null;
+             return allEvents.FirstOrDefault<CalendarEvent>(ce => ce.Id != calendarEvent.Id && ce.StartTime <= calendarEvent.EndTime && ce.EndTime >= calendarEvent.StartTime) != null;
         }
     }
 }
